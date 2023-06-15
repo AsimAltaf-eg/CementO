@@ -1,0 +1,48 @@
+# Global configuration
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log;
+pid /var/run/nginx.pid;
+
+# HTTP server
+http {
+  include /etc/nginx/mime.types;
+  default_type application/octet-stream;
+  access_log /var/log/nginx/access.log;
+
+  # Proxy settings
+  proxy_redirect off;
+  proxy_set_header Host $http_host;
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+  # Backend server
+  upstream backend {
+    server backend:8000;
+  }
+
+  # Frontend server
+  server {
+    listen 80;
+    server_name yourdomain.com;
+
+    location / {
+      root /app/frontend/build;
+      try_files $uri $uri/ /index.html;
+    }
+
+    location /api/ {
+      proxy_pass http://backend/;
+    }
+
+    # Additional configuration for static files, if needed
+    location /static/ {
+      alias /app/backend/static/;
+    }
+
+    # Additional configuration for media files, if needed
+    location /media/ {
+      alias /app/backend/media/;
+    }
+  }
+}
