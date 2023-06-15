@@ -1,0 +1,30 @@
+pipeline {
+  agent any
+
+  stages {
+    stage('Build') {
+      steps {
+        // Checkout the source code from your version control system
+        checkout scm
+
+        // Build the Docker image
+        sh 'docker build -t myapp .'
+      }
+    }
+
+    stage('Test') {
+      steps {
+        // Run the tests inside the Docker container
+        sh 'docker run --rm myapp python backend/manage.py test'
+      }
+    }
+
+    stage('Deploy') {
+      steps {
+        // Deploy the Docker image to your desired environment
+        // For example, you can push it to a Docker registry
+        sh 'docker push myapp'
+      }
+    }
+  }
+}
